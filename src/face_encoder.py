@@ -57,7 +57,7 @@ class FaceEncoder:
     def process_image(self, image_path):
         image = load_image(image_path)
         results = self.detect_faces(image)
-        face_encodings = self.treat_detections(results)
+        face_encodings = self.treat_detections(image, results)
         return face_encodings
 
     def close(self):
