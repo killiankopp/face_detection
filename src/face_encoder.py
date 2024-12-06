@@ -33,23 +33,31 @@ class FaceEncoder:
         self.predictor = dlib.shape_predictor(predictor_path)
         self.mp_face_detection = mp.solutions.face_detection.FaceDetection(min_detection_confidence = 0.5)
 
-    def process_image(self, image_path):
-        image = load_image(image_path)
+    def detect_faces(self, image):
         rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         results = self.mp_face_detection.process(rgb_image)
+        return results
 
+    def encode_face(self, image, detection):
+        x, y, h, w = extract_box(detection, image)
+        rect = dlib.rectangle(x, y, x + w, y + h)
+        shape = self.predictor(image, rect)
+
+        face_encoding = np.array(self.face_rec_model.compute_face_descriptor(image, shape))
+        return face_encoding
+
+    def treat_detections(self, image, results):
         face_encodings = []
         if results.detections:
             for detection in results.detections:
-                x, y, h, w = extract_box(detection, image)
-
-                rect = dlib.rectangle(x, y, x + w, y + h)
-
-                shape = self.predictor(image, rect)
-
-                face_encoding = np.array(self.face_rec_model.compute_face_descriptor(image, shape))
+                face_encoding = self.encode_face(image, detection)
                 face_encodings.append(face_encoding)
+        return face_encodings
 
+    def process_image(self, image_path):
+        image = load_image(image_path)
+        results = self.detect_faces(image)
+        face_encodings = self.treat_detections(results)
         return face_encodings
 
     def close(self):
