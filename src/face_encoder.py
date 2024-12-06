@@ -34,10 +34,8 @@ class FaceEncoder:
         self.mp_face_detection = mp.solutions.face_detection.FaceDetection(min_detection_confidence = 0.5)
 
     def process_image(self, image_path):
-
         image = load_image(image_path)
         rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
         results = self.mp_face_detection.process(rgb_image)
 
         face_encodings = []
@@ -55,5 +53,4 @@ class FaceEncoder:
         return face_encodings
 
     def close(self):
-
         self.mp_face_detection.close()
