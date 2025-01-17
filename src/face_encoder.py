@@ -1,9 +1,9 @@
-import os
-
 import cv2
 import dlib
+import json
 import mediapipe as mp
 import numpy as np
+import os
 
 
 def load_image(image_path) -> np.ndarray:
@@ -11,7 +11,6 @@ def load_image(image_path) -> np.ndarray:
     if image is None:
         raise ValueError(f"Impossible de charger l'image à l'emplacement: {image_path}")
     return image
-
 
 def extract_box(detection, image) -> tuple:
     bboxC = detection.location_data.relative_bounding_box
@@ -23,9 +22,24 @@ def extract_box(detection, image) -> tuple:
     return x, y, h, w
 
 
+def store_encodings( image_path, face_encodings ):
+    data = []
+    for encoding in face_encodings:
+        data.append(
+            {
+                "label": "unknow",
+                "encoding": encoding.tolist(),
+                "image_path": image_path
+            }
+        )
+    with open('kiki3.json', 'w') as f:
+        json.dump(data, f, indent=4)
+
 class FaceEncoder:
-    def __init__(self, face_rec_model_path='models/dlib_face_recognition_resnet_model_v1.dat',
-                 predictor_path="models/shape_predictor_68_face_landmarks.dat"):
+    def __init__(
+            self, face_rec_model_path='../models/dlib_face_recognition_resnet_model_v1.dat',
+            predictor_path="../models/shape_predictor_68_face_landmarks.dat"
+            ):
         face_rec_model_path = os.path.abspath(face_rec_model_path)
         predictor_path = os.path.abspath(predictor_path)
 
@@ -62,3 +76,4 @@ class FaceEncoder:
 
     def close(self):
         self.mp_face_detection.close()
+
